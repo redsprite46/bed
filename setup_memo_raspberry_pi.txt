@@ -1,0 +1,88 @@
+
+* システム構成
+  ローカルIP(eth0)  192.168.60.1
+
+* 設定
+** ネットワーク
+- 右上のネットワークマークを右クリック
+  WiFi Networks (dhcpcdui) Settings
+
+interface eth0 で
+IP Address: 192.168.60.1/24
+に設定
+
+
+- さらに左クリック
+WiFiを選んで暗号キーを打ち込み接続
+
+
+** システム
+- Menu - Preferences - Raspberry Pi Configuration
+
+Systemタブ
+Password: 変更 
+Hostname: raspberrypi-<MamoruId>
+
+Localisation
+Locale: 変更なし
+Timezone: Japan
+Keyboard: Japan - Japanese (OADG 109A)
+WiFi Country: Japan
+
+- 言語設定
+$ sudo apt-get update
+$ sudo apt-get upgrade
+$ sudo apt-get install -y ibus-mozc fonts-takao
+
+menu-preferences-ibus preference
+[General Tab]
+...クリック
+Disabledクリック
+New accelerator... クリック
+半角・全角キーを押下
+Apply
+OK
+[Advanced Tab]
+Keyboard Layout - Use System Keyboard Layout をチェック
+
+[input Method Tab]
+Add - Japanese -Mozc
+
+その後Reboot
+
+** 開発環境など
+$ sudo apt-get install libredis-perl
+$ sudo apt-get install rsh-client
+$ sudo apt-get install redis-server
+$ sudo apt-get install libredis-perl
+$ sudo apt-get install cpanminus
+$ sudo apt-get install ninja-ide
+$ sudo apt-get install python3-numpy
+$ sudo apt-get install python3-scipy
+$ sudo apt-get install python3-requests
+$ sudo apt-get install python3-redis
+$ sudo apt-get install python3-pyqt4
+$ sudo apt-get install python3-pyqtgraph
+$ sudo apt-get install python3-pandas
+$ sudo apt-get install qt4-designer
+$ sudo apt-get install pyqt4-dev-tools
+$ sudo apt-get install python3-pip
+$ sudo pip3 install scikit-learn
+$ sudo cpanm Math::FFT
+$ sudo cpanm LWP::UserAgent
+    時計が合ってないと失敗することがあるので注意
+
+** Redisの設定
+Redisの設定
+  $ sudo vi /etc/redis/redis.conf
+   # bindをコメントアウトしてIPアドレスを開放
+   # bind 127.0.0.1 192.168.60.254
+   
+  ログインで自動的にredis-serverを起動
+  $ sudo nano ~/.profile して以下を挿入
+    redis-server &
+
+  reboot
+
+** 遅延実行
+$ sudo apt-get install at

@@ -1,0 +1,194 @@
+■ システム構成
+
+Raspberry PI 2 from 信州大学
+  ローカルIP(eth0)  192.168.60.1
+  学内IP(wlan0)     172.28.2.68
+
+Raspberry PI 3
+  ローカルIP(eth0)  192.168.60.3
+  学内IP(wlan0)     172.28.2.67
+
+パトランプ
+  ローカルIP        192.168.60.2
+
+
+
+■ 設定メモ
+**Raspberry Pi 3
+  System - Hostname - raspberrypi-0
+  
+  nano /etc/dhcpcd.conf
+  ↓追記
+  interface eth0
+  static ip_address=192.168.60.3/24
+  
+  セッティング完了後に
+  sudo /etc/init.d/dhcpcd reload
+
+**Raspberry Pi 2のLAN接続
+  # 参考となるWebページ
+  http://ysdyt.github.io/blog/2015/06/28/raspi-wifi-static-ipaddress/
+  
+  # 無線LAN機器接続の確認
+  $ lsusb
+  
+  # 接続情報の設定書き込み
+  sudo bash
+  chmod 660 /etc/wpa_supplicant/wpa_supplicant.conf
+  sudo wpa_passphrase "aterm-g-523254-g" "38ec7233e0600" >> /etc/wpa_supplicant/wpa_supplicant.conf
+  exit
+  
+  #/etc/wpa_supplicant/wpa_supplicant.confの編集
+  $ sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+  ↓編集
+  ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+  update_config=1
+  network={
+          ssid="接続先のSSID"
+          proto=WPA2
+          key_mgmt=WPA-PSK
+          pairwise=TKIP CCMP
+          group=TKIP CCMP
+          #psk="接続先のパスワード"
+          psk=数字とアルファベットの羅列が入ってる
+          scan_ssid=1
+  }
+  
+  # 古いinterfacesファイルを保存
+  $ cp /etc/network/interfaces /etc/network/interfaces.shinshu
+  
+  $ sudo nano /etc/network/interfaces
+  ↓書き換え
+  auto eth0
+  allow-hotplug eth0
+  iface eth0 inet static
+  address 192.168.60.1
+  netmask 255.255.255.0
+  
+  auto wlan0
+  allow-hotplug wlan0
+  #iface wlan0 inet auto
+  iface wlan0 inet static
+  address 172.28.2.68
+  netmask 255.255.255.0
+  gateway 172.28.2.254
+  dns-nameservers 172.24.20.45
+  
+  wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+  
+  設定完了後に
+  sudo reboot
+
+**Raspberry PI 3へ2の機能を移植して動作させる
+  # Raspberry Pi 3へ2のファイルを全コピー
+  $ cd ~
+  $ mkdir scope
+  $ cd scope
+  $ scp pi@192.168.60.1:/home/pi/scope/*
+   パスワード入力(scope-akita)
+  
+  # perlの環境セットアップ
+  http://qiita.com/debug-ito/items/7caaecf6988870973438
+  
+  
+  # Redisのインストール
+  $ sudo apt-get install redis-server
+  $ sudo service redis-server status
+    # 127.0.0.1:6379で動作を確認
+  
+  # Redisモジュールのインストール
+  $ sudo apt-get install build-essential
+  $ sudo apt-get install libredis-perl
+
+**パトライト設定
+  パトライトとPCを直接接続
+  PCのIPアドレスを 192.168.10.2, サブネットマスクを255.255.255.0に設定
+  Webブラウザで http://192.168.10.1/index.htm へアクセス
+    パスワードは patlite
+    システム設定で本体IPアドレスを192.168.60.2へ変更
+    パトライトを再起動
+  PCのIPアドレスを 192.168.60.254, サブネットマスクを255.255.255.0に変更
+  Webブラウザで http://192.168.60.2/index.htm へアクセス
+    セットアップ項目-コマンド受信設定で以下を設定
+      送信元アドレス指定 - 無効
+      送信元アドレス無効時共通ログイン名 - scope
+  PC側のRSHクライアント設定
+    $ sudo apt-get install rsh-client
+
+**枕シェイクの動作確認
+  ~/scope ディレクトリへ shake.plをコピー
+  cpanm (Perlのパッケージ管理) のインストール
+    $ sudo apt-get install cpanminus
+  ~/.profile に追記 ($nano /.profileで開いて)
+    export PERL5LIB="$HOME/perl5/lib/perl5:$PERL5LIB"
+    PATH="$HOME/perl5/bin:$PATH"
+  時計があっていないとビルドにコケるので設定
+    $ sudo date -s "2016/10/31 13:14:30"
+    ntpは学内でポート123が開放されていないのでコケる模様
+      $ sudo aptitude install ntpdate
+      $ sudo nano /etc/default/ntpdate
+        NTPDATE_USE_NTP_CONF=no
+        NTPSERVERS="ntp.nict.jp"
+        NTPOPTIONS=""
+      $ sudo ntpdate -d ntp.nict.jp
+  FFTモジュールのインストール
+    $ sudo cpanm Math::FFT
+  参考URL: http://qiita.com/debug-ito/items/7caaecf6988870973438
+
+**ベッドモニタリング機能
+redisデータの仕様
+  server: localhost:6379
+  list key: postdata, shakedata, monitordata
+  format: (MamoruId):(datatype):(unixtime):(data1):(data2):(data3):(data4):(data5)
+    datatype:
+      0: 加速度センサ
+      1: (10ビット, 511近辺が中心値)
+
+いろいろインストール
+  $ sudo apt-get install ninja-ide
+  $ sudo apt-get install python3-numpy
+  $ sudo apt-get install python3-scipy
+  $ sudo apt-get install python3-requests
+  $ sudo apt-get install python3-redis
+  $ sudo apt-get install python3-pyqt4
+  $ sudo apt-get install python3-pyqtgraph
+  $ sudo apt-get install pandas
+  $ sudo apt-get install qt4-designer
+  $ sudo apt-get install pyqt4-dev-tools
+  $ sudo apt-get install python3-pip
+  $ sudo pip3 install scikit-learn
+  $ sudo pip3 install hmmlearn
+  $ sudo apt-get update
+
+ちょっと掃除
+  $ sudo apt-get clean
+  $ sudo apt-get autoremove
+
+Redisの設定
+  $ sudo vi /etc/redis/redis.conf
+   # bindをコメントアウトしてIPアドレスを開放
+   # bind 127.0.0.1 192.168.60.254
+   
+  ログインで自動的にredis-serverを起動
+  $ sudo nano ~/.profile して以下を挿入
+    redis-server &
+
+
+-------------
+↓やらないほうがいい
+ログイン時のdhcpcdトラブル解消
+http://marm.cocolog-nifty.com/jokanaan/2015/10/fail-not-runnin.html
+$ dpkg -l |grep dhcp
+$ sudo apt-get remove dhcpcd5
+
+- Reference
+http://will-hart.github.io/blitz/server/raspberry-pi-setup.html
+
+ネットワークトラブル時
+sudo ifdown wlan0
+sudo ifup wlan0
+sudo dhcpcd
+
+困った現象
+apt-get install upstart
+したせいで、GUI rebootが壊れた

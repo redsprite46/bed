@@ -1,0 +1,100 @@
+- Setting
+ubuntu-14.04.3-desktop-amd64.iso
+
+- Installation
+http://www.aise.ics.saitama-u.ac.jp/~gotoh/VMPlayerIntoWindows7.html
+http://www.aise.ics.saitama-u.ac.jp/~gotoh/Ubuntu1204LTSOnVMPlayer.html
+
+- Install git
+sudo apt-get install git
+sudo apt-get upgrade
+git config --global user.name "Your Name"
+git config --global user.email your@mail.com
+
+- Install vmware tools
+VMWare Player - Manage - Install VMWare Tools
+http://qiita.com/maccotsan/items/fafdc01deac71c20bd60
+
+git clone https://github.com/rasa/vmware-tools-patches.git
+cp VMWareTools-*.tar.gz vmware-tools-patches/
+cd vmware-tools-patches
+./untar-and-patch-and-compile.sh
+
+- Install Anaconda
+ref: http://qiita.com/y__sama/items/5b62d31cb7e6ed50f02c
+
+install pyenv
+$ git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+$ echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+$ echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+$ echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+$ source ~/.bashrc
+
+install anaconda
+$ pyenv install -l | grep ana
+# 最新版を確認。anaconda3-4.1.1 (2系はanaconda2-4.1.1)
+# minicondaがいい人はminicondaを入れてください。
+$ pyenv install anaconda3-4.1.1
+$ pyenv rehash
+$ pyenv global anaconda3-4.1.1
+# anacondaをメインのpythonに設定。
+$ echo 'export PATH="$PYENV_ROOT/versions/anaconda3-4.1.1/bin/:$PATH"' >> ~/.bashrc
+$ source ~/.bashrc
+# activateがpyenvとanacondaでバッティングするので、pathに明示しておく。
+$ conda update conda
+# 念のためconda自体をアップデートしておく。
+
+- Install python libraries
+$ conda install pyqtgraph
+$ sudo apt-get install qt-designer
+$ sudo apt-get install ninja-ide
+
+- Install
+$ conda install scikit-learn
+$ conda install pip
+$ pip install -U hmmlearn
+$ conda install pandas
+
+- Install Twilio API
+$ pip install twilio
+
+- Install mysql
+$ conda install pymysql
+
+==============================================================
+
+- Install sublime text 3
+http://qiita.com/nonNoise/items/3a4e87c04cc59142cdb2
+
+sudo add-apt-repository ppa:webupd8team/sublime-text-3
+sudo apt-get update
+sudo apt-get install sublime-text-installer
+sudo apt-get install ibus-mozc
+sudo apt-get install emacs-mozc
+
+- Install Oracle JDK
+sudo apt-add-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+
+- Install IntelliJ IDEA
+https://www.jetbrains.com/idea/help/installing-and-launching.html
+
+Add plugins
+python, ruby, webstorm, clion
+
+- Install Clion
+https://www.youtube.com/watch?v=cRX581YUAjA
+
+- Install cmake
+sudo apt-get install cmake
+sudo apt-get upgrade
+
+- Install RSH Client
+$ sudo apt-get install rsh-client
+$ sudo apt-get install iptables-persistent
+$ sudo /etc/init.d/iptables-persistent save 
+$ sudo /etc/init.d/iptables-persistent reload
+# 効き目なし、あきらめる
+
+http://hetarena.com/archives/2343
